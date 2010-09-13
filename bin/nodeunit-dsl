@@ -1,0 +1,2 @@
+#! /usr/bin/env bash
+time for f in $@; do find -X $f -name '*.js' -type f | xargs node; done
