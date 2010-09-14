@@ -65,57 +65,114 @@ Future API
 Here's what I'm thinking.
 
     // apples.js
-    Season = null;
-    I.amHungry = null;
+    Season = 'spring';
+    I.amHungry = false;
 
     Apple = function() {};
     Apple.prototype = {
-      isRipe: function() { return Season === 'summer' || Season === 'fall'; },
-      isTasty: function() { return this.isRipe() && I.amHungry; }
+      isRipe: function() { return Season !== 'spring' },
+      isFresh: function() { return Season === 'summer' },
+      isTasty: function() { return this.isRipe() && this.isFresh() && I.amHungry; }
     };
+
+    when('initial', function() {
+      has('an apple', function() {
+        this.apple = new Apple();
+      });
+      its('not ripe', function() {
+        return !this.apple.isRipe();
+      });
+      its('not tasty', function() {
+        return !this.apple.isTasty();
+      });
+      its('not fresh', function() {
+        return !this.apple.isFresh();
+      });
+    });
+
+    when('seasons', function() {
+      has('an apple');
+
+      function hasSeason(season) {
+        has(season + ' season', function() { Season = season; });
+      }
+
+      when('spring', function() {
+        hasSeason('spring');
+        its('not ripe');
+        its('not fresh');
+      });
+
+      when('summer', function(summer) {
+        hasSeason(summer);
+        its('ripe', function() {
+          return this.apple.isRipe();
+        });
+        its('fresh', function() {
+          return this.apple.isFresh();
+        });
+      });
+
+      when('winter', 'fall', function(season) {
+        hasSeason(season);
+        its('ripe');
+        its('not fresh');
+      });
+    });
+
+    when('no hunger', function() {
+      has('an apple');
+      has('no hunger', function() {
+        I.amHungry = false;
+      });
+      when('spring', 'summer', 'fall', 'winter', function(season) {
+        has(season + ' season');
+        its('not tasty');
+      });
+    });
+
+    when('hunger', function() {
+      has('an apple');
+      has('hunger', function() {
+        I.amHungry = true;
+      });
+
+      when('summer', function() {
+        has('summer season');
+        its('tasty', function() {
+          return this.apple.isTasty();
+        });
+      });
+
+      when('spring', 'fall', 'winter', function(season) {
+        has(season + ' season');
+        its('not tasty');
+      });
+    });
+
+    if (module.id === '.') run();
+    else exports.tests = suite();
+
+It should be trivial to DRY tests across suites.
+
+    // fugi.js
+    var apple = require('apple');
 
     FugiApple = function() {};
     FugiApple.prototype = new Apple();
-    FugiApple.prototype.isTasty = function() { return this.isRipe(); }
+    FugiApple.prototype.isTasty = function() { return this.isRipe() && this.isFresh(); }
 
-    with('an apple', function() {
-      this.apple = new Apple();
-
-      with("fall", function() {
-        Season = 'fall';
-        test('the apple is ripe', function(is) {
-          is.ok(this.apple.isRipe());
-        });
-
-        with('hunger', function() {
-          I.amHungry = true;
-          test('the apple is not tasty', function(is) {
-            is.ok(!this.apple.isTasty());
-          });
-        });
+    when('fugi', function() {
+      has('a fugi apple', function() {
+        this.apple = new FugiApple();
       });
-
-      with("summer", function() {
-        Season = 'summer';
-        test('the apple is ripe'); // predefined test
-        with('hunger', function() { // predefined context
-          test('the apple is tasty', function(is) { // new test
-            is.ok(this.apple.isTasty());
-          });
-        });
-        with('no hunger', function() { // new context
-          I.amHungry = false;
-          test('the apple is not tasty'); // predefined test
-        })
-      });
+      apple.tests.has('no hunger');
+      apple.tests.has('summer season');
+      apple.tests.its('tasty');
     });
 
-    with('a fugi apple', function() {
-      this.apple = new FugiApple();
-      with('no hunger', function(){
-        test('the apple is tasty');
-      });
-    });
+    if (module.id === '.') run();
+    else exports.tests = suite();
 
 Feedback appreciated.
 
@@ -124,31 +181,45 @@ Future Command Line
 
 You can run all the tests:
 
-    > nodeunit-dsl apples.js --test "the apple is tasty"
-    with an apple
-      with summer
-        with hunger
-          the apple is tasty
-    with a fugi apple
-      with no hunger
-        the apple is tasty
+    > nodeunit-dsl *.js --its "tasty"
+    apple.js
+      an apple
+      summer season
+      hunger
+        ✔ tasty
+    fugi.js
+      a fugi apple
+      summer season
+      no hunger
+      ✔ tasty
 
 Or run all the matching contexts:
 
-    > nodeunit-dsl apples.js --with "no hunger"
-    with an apple
-      with summer
-        with no hunger
-          the apple is not tasty
-    with a fugi apple
-      with no hunger
-        the apple is tasty
+    > nodeunit-dsl *.js --has "no hunger"
+    apple.js
+      an apple
+      no hunger
+        summer
+          ✔ not tasty
+        spring
+          ✔ not tasty
+        winter
+          ✔ not tasty
+        fall
+          ✔ not tasty
+    fugi.js
+      a fugi apple
+      summer season
+      no hunger
+      ✔ tasty
 
 Or do both:
 
-    > nodeunit-dsl apples.js --with "no hunger" --test "the apple is tasty"
-    with a fugi apple
-      with no hunger
-        the apple is tasty
+    > nodeunit-dsl *.js --has "no hunger" --its "tasty"
+    fugi.js
+      a fugi apple
+      summer season
+      no hunger
+      ✔ tasty
 
 How 'bout them apples? `:-)`
