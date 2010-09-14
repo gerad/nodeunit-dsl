@@ -209,7 +209,7 @@ block.
       }, 100);
     });
 
-    // *WRONG*
+    // **WRONG**
     its('run later', function(its) {  //  <-- the passed `its` is just a reference to `this`
       runsLater(function(message) {
         its.done(message === 'itRan');
