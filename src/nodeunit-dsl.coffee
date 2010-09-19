@@ -9,7 +9,6 @@ bold  = (str) -> "\033[1m#{str}\033[22m"
 
 tests = {}
 exports.test = (name, fn) ->
-  console.log exports
   tests[name] = fn
 
 befores = []
