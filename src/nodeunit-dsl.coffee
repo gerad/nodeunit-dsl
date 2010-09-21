@@ -22,7 +22,7 @@ exports.after = (fn) ->
 exports.run = (name) ->
   process.nextTick ->
     sys.puts bold "\n#{name}"
-    nodeunit.runModule tests, {
+    nodeunit.runModule name, tests, {
       name: name
       testStart: ->
         fn() for fn in befores
@@ -42,4 +42,4 @@ exports.run = (name) ->
         else
           sys.puts bold(green(
             "\nOK: #{assertions.length} assertions(#{assertions.duration} ms)"))
-    }
+    }, (->)

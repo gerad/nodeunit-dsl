@@ -3,7 +3,7 @@
   "description":  "A simple DSL built on top of nodeunit",
   "keywords":     ["test", "qunit", "nodeunit", "tdd", "bdd"],
   "author":       "Gerad Suyderhoud",
-  "version":      "0.0.1",
+  "version":      "0.0.2",
   "licenses": [{
     "type":       "MIT",
     "url":        "http://opensource.org/licenses/mit-license.php"
@@ -12,7 +12,7 @@
     "node":       ">=0.2.0"
   },
   "dependencies": {
-    "nodeunit" :       ">=0.1.0"
+    "nodeunit" :       ">=0.2.0"
   },
   "main": "./lib/nodeunit-dsl.js",
   "bin": {
