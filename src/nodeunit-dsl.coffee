@@ -27,19 +27,19 @@ exports.run = (name) ->
       testStart: ->
         fn() for fn in befores
       testDone: (name, assertions) ->
+        failures = if typeof(assertions.failures) is "function" then assertions.failures() else assertion.failures
         fn() for fn in afters
-        if not assertions.failures
+        if not failures
           sys.puts "✔ #{name}"
         else
           sys.puts red "✖ #{name}"
           for assertion in assertions when assertion.failed()
             sys.puts assertion.error.stack + "\n"
       moduleDone: (name, assertions) ->
-        if assertions.failures
-          sys.puts bold(red(
-            "\nFAILURES #{assertions.failures} / #{assertions.length} " +
+        failures = if typeof(assertions.failures) is "function" then assertions.failures() else assertion.failures
+        if failures
+          sys.puts bold(red("\nFAILURES #{failures} / #{assertions.length} " +
             " assertions failed (#{assertions.duration} ms)"))
         else
-          sys.puts bold(green(
-            "\nOK: #{assertions.length} assertions(#{assertions.duration} ms)"))
+          sys.puts bold(green("\nOK: #{assertions.length} assertions(#{assertions.duration} ms)"))
     }, (->)
